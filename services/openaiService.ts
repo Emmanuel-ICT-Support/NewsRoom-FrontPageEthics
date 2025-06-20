@@ -1,19 +1,19 @@
 
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import OpenAI from 'openai';
 import { NewsroomMissionInputs, SourceEntry } from '../types';
-import { GEMINI_MODEL_TEXT, GEMINI_MODEL_IMAGE } from '../constants';
+import { OPENAI_MODEL_TEXT, OPENAI_MODEL_IMAGE } from '../constants';
 
-const API_KEY = process.env.API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_OPENAI_API_KEY;
 
-let ai: GoogleGenAI | null = null;
-if (API_KEY) {
-  ai = new GoogleGenAI({ apiKey: API_KEY });
+let ai: OpenAI | null = null;
+if (OPENAI_API_KEY) {
+  ai = new OpenAI({ apiKey: OPENAI_API_KEY });
 } else {
-  console.error("API_KEY is not configured. Please set the process.env.API_KEY environment variable.");
+  console.error("OPENAI_OPENAI_API_KEY is not configured. Please set it in your environment.");
 }
 
 export const checkApiKey = (): boolean => {
-  return !!API_KEY;
+  return !!OPENAI_API_KEY;
 };
 
 interface SourceInsight {
@@ -26,7 +26,7 @@ export const startNewsroomMission = async (
   sourceInsights: SourceInsight[] = [] // Optional parameter for source insights
 ): Promise<string> => {
   if (!ai) {
-    throw new Error("Gemini API client is not initialized. API_KEY might be missing.");
+    throw new Error("OpenAI client is not initialized. OPENAI_API_KEY might be missing.");
   }
 
   const {
@@ -81,11 +81,11 @@ Ensure the entire article flows well and is engaging for a Year 11 readership.
   `;
 
   try {
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model: GEMINI_MODEL_TEXT,
-      contents: prompt,
+    const response = await ai.chat.completions.create({
+      model: OPENAI_MODEL_TEXT,
+      messages: [{ role: 'user', content: prompt }],
     });
-    return response.text;
+    return response.choices[0]?.message?.content || '';
   } catch (error) {
     console.error("Error generating newsroom mission article:", error);
     if (error instanceof Error) {
@@ -97,7 +97,7 @@ Ensure the entire article flows well and is engaging for a Year 11 readership.
 
 export const formatSourceToAPA = async (rawSourceText: string): Promise<string> => {
   if (!ai) {
-    throw new Error("Gemini API client is not initialized. API_KEY might be missing.");
+    throw new Error("OpenAI client is not initialized. OPENAI_API_KEY might be missing.");
   }
 
   if (!rawSourceText || rawSourceText.trim() === "") {
@@ -116,15 +116,15 @@ User-provided source text:
   `;
 
   try {
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model: GEMINI_MODEL_TEXT,
-      contents: prompt,
+    const response = await ai.chat.completions.create({
+      model: OPENAI_MODEL_TEXT,
+      messages: [{ role: 'user', content: prompt }],
     });
-    // Check if the AI itself signaled an error in its response text
-    if (response.text.startsWith("Error: Could not format source:")) {
-        return response.text;
+    const text = response.choices[0]?.message?.content || '';
+    if (text.startsWith('Error: Could not format source:')) {
+      return text;
     }
-    return response.text.trim(); // Return the trimmed text, assuming it's the formatted entry
+    return text.trim();
   } catch (error) {
     console.error("Error formatting source to APA:", error);
     if (error instanceof Error) {
@@ -137,7 +137,7 @@ User-provided source text:
 
 export const suggestImagePrompts = async (articleInputs: NewsroomMissionInputs): Promise<string[]> => {
   if (!ai) {
-    throw new Error("Gemini API client is not initialized. API_KEY might be missing.");
+    throw new Error("OpenAI client is not initialized. OPENAI_API_KEY might be missing.");
   }
 
   const { headline, studentName, moralIssue, challenges, studentDecision, catholicTeachings, conscience, quotes } = articleInputs;
@@ -162,13 +162,12 @@ Ensure the output is ONLY the JSON array of three strings.
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: GEMINI_MODEL_TEXT,
-      contents: prompt,
-      config: { responseMimeType: "application/json" },
+    const response = await ai.chat.completions.create({
+      model: OPENAI_MODEL_TEXT,
+      messages: [{ role: 'user', content: prompt }],
     });
 
-    let jsonStr = response.text.trim();
+    let jsonStr = response.choices[0]?.message?.content?.trim() || '';
     const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
     const match = jsonStr.match(fenceRegex);
     if (match && match[2]) {
@@ -191,21 +190,23 @@ Ensure the output is ONLY the JSON array of three strings.
 
 export const generateHalftoneImage = async (prompt: string): Promise<string> => {
   if (!ai) {
-    throw new Error("Gemini API client is not initialized. API_KEY might be missing.");
+    throw new Error("OpenAI client is not initialized. OPENAI_API_KEY might be missing.");
   }
 
   const fullPrompt = `"${prompt}". Style: black and white halftone, newspaper photojournalism style, high contrast, grainy, dramatic lighting.`;
 
   try {
-    const response = await ai.models.generateImages({
-      model: GEMINI_MODEL_IMAGE,
+    const response = await ai.images.generate({
+      model: OPENAI_MODEL_IMAGE,
       prompt: fullPrompt,
-      config: { numberOfImages: 1, outputMimeType: 'image/jpeg' },
+      n: 1,
+      size: '1024x1024',
+      response_format: 'b64_json'
     });
 
-    if (response.generatedImages && response.generatedImages.length > 0 && response.generatedImages[0].image?.imageBytes) {
-      const base64ImageBytes = response.generatedImages[0].image.imageBytes;
-      return `data:image/jpeg;base64,${base64ImageBytes}`;
+    const base64ImageBytes = response.data[0]?.b64_json;
+    if (base64ImageBytes) {
+      return `data:image/png;base64,${base64ImageBytes}`;
     }
     throw new Error("No image data received from API.");
   } catch (error) {

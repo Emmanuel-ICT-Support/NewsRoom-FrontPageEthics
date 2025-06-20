@@ -2,8 +2,8 @@
 
 import { SocraticStep, SourceEntry, PhotoEntry, NewsroomMissionInputs, ResearchBibliographyInputs, RubricCriterion, RubricSectionDefinition, RubricCriterionKey } from './types';
 
-export const GEMINI_MODEL_TEXT = 'gemini-2.5-flash-preview-04-17';
-export const GEMINI_MODEL_IMAGE = 'imagen-3.0-generate-002'; // Added image model
+export const OPENAI_MODEL_TEXT = 'gpt-4o';
+export const OPENAI_MODEL_IMAGE = 'dall-e-3';
 
 export const initialNewsroomMissionInputs: NewsroomMissionInputs = {
   headline: "",

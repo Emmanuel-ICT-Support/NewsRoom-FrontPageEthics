@@ -1,15 +1,15 @@
 
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+import OpenAI from 'openai';
 import { NewsroomMissionInputs, SourceEntry, RubricCriterion, RubricScore, RubricCriterionKey } from '../types';
-import { GEMINI_MODEL_TEXT, RUBRIC_CRITERIA } from '../constants';
+import { OPENAI_MODEL_TEXT, RUBRIC_CRITERIA } from '../constants';
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.OPENAI_API_KEY;
 
-let ai: GoogleGenAI | null = null;
+let ai: OpenAI | null = null;
 if (API_KEY) {
-  ai = new GoogleGenAI({ apiKey: API_KEY });
+  ai = new OpenAI({ apiKey: API_KEY });
 } else {
-  console.error("API_KEY is not configured for rubricService. Rubric evaluations will fail.");
+  console.error("OPENAI_API_KEY is not configured for rubricService. Rubric evaluations will fail.");
 }
 
 const getCriterionById = (id: RubricCriterionKey): RubricCriterion | undefined => {
@@ -50,7 +50,7 @@ Example for no input on required: {"score": 0, "feedback": "No input provided. P
 `;
 };
 
-const evaluateWithGemini = async (criterion: RubricCriterion, studentText: string): Promise<RubricScore> => {
+const evaluateWithOpenAI = async (criterion: RubricCriterion, studentText: string): Promise<RubricScore> => {
     if (!ai) {
         return { criterionId: criterion.id, marksAwarded: 0, feedback: "API Key not configured. Evaluation skipped.", isLoading: false };
     }
@@ -64,13 +64,12 @@ const evaluateWithGemini = async (criterion: RubricCriterion, studentText: strin
     const prompt = generateRubricPrompt(criterion, studentText);
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: GEMINI_MODEL_TEXT,
-            contents: prompt,
-            config: { responseMimeType: "application/json" }
+        const response = await ai.chat.completions.create({
+            model: OPENAI_MODEL_TEXT,
+            messages: [{ role: 'user', content: prompt }],
         });
 
-        let jsonStr = response.text.trim();
+        let jsonStr = response.choices[0]?.message?.content?.trim() || '';
         const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
         const match = jsonStr.match(fenceRegex);
         if (match && match[2]) {
@@ -88,7 +87,7 @@ const evaluateWithGemini = async (criterion: RubricCriterion, studentText: strin
         }
         throw new Error("Invalid JSON response format from AI.");
     } catch (error) {
-        console.error(`Error evaluating criterion ${criterion.id} with Gemini:`, error);
+        console.error(`Error evaluating criterion ${criterion.id} with OpenAI:`, error);
         let message = "Failed to evaluate due to an error.";
         if (error instanceof Error) message = `Evaluation error: ${error.message}`;
         return { criterionId: criterion.id, marksAwarded: 0, feedback: message, isLoading: false };
@@ -122,7 +121,7 @@ export const calculateLiveRubricScores = async (
     finalArticleContent: string // This is (userEditedProofContent ?? baseGeneratedProofContent)
 ): Promise<RubricScore[]> => {
     if (!ai && RUBRIC_CRITERIA.some(c => c.assessmentStrategy !== 'programmatic')) {
-        console.warn("Gemini API client not initialized in rubricService. Some evaluations will be skipped.");
+        console.warn("OpenAI client not initialized in rubricService. Some evaluations will be skipped.");
     }
 
     const scores: RubricScore[] = [];
@@ -145,9 +144,9 @@ export const calculateLiveRubricScores = async (
                         .join("\n\n---\n\n")
                         .trim();
                 }
-                currentScore = await evaluateWithGemini(criterion, combinedText);
+            currentScore = await evaluateWithOpenAI(criterion, combinedText);
             } else if (criterion.assessmentStrategy === 'full_article_gemini') {
-                 currentScore = await evaluateWithGemini(criterion, finalArticleContent || "No article content available to assess.");
+                 currentScore = await evaluateWithOpenAI(criterion, finalArticleContent || "No article content available to assess.");
             } else if (criterion.assessmentStrategy === 'programmatic' && criterion.id === 'bibliography') {
                 currentScore = evaluateBibliographyProgrammatically(criterion, bibliographySources);
             } else {
