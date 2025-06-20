@@ -14,7 +14,7 @@ import FormattedSourceEntryDisplay from './components/FormattedSourceEntryDispla
 import TextAreaInput from './components/TextAreaInput';
 import NewspaperConventionChecklist from './components/NewspaperConventionChecklist'; // Added import
 import RealTimeRubric from './components/RealTimeRubric'; // Added import for Rubric
-import { startNewsroomMission, formatSourceToAPA, checkApiKey, suggestImagePrompts, generateHalftoneImage } from './services/geminiService';
+import { startNewsroomMission, formatSourceToAPA, checkApiKey, suggestImagePrompts, generateHalftoneImage } from './services/openaiService';
 import { calculateLiveRubricScores } from './services/rubricService'; // Added import for Rubric Service
 
 const generateLivePreviewText = (
