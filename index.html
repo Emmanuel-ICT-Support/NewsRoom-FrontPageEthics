@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Newsroom Mission: Front Page Ethics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Oswald:wght@400;500;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Merriweather', serif;
+      background-color: #fdfdf8; /* Off-white newsprint color */
+      color: #333333; /* Dark gray for text */
+    }
+    .font-playfair {
+      font-family: 'Playfair Display', serif;
+    }
+    .font-oswald {
+      font-family: 'Oswald', sans-serif;
+    }
+    .font-merriweather {
+      font-family: 'Merriweather', serif;
+    }
+
+    /* Custom scrollbar for webkit browsers */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #e0e0e0; /* Lighter track */
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #555555; /* Darker thumb */
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #333333;
+    }
+
+    /* Basic newspaper column line */
+    .newspaper-column-line {
+      border-right: 1px solid #cccccc;
+    }
+    .newspaper-divider {
+      border-top: 1px solid #aaaaaa;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .newspaper-section-divider {
+       border-top: 2px solid #333333;
+       margin-top: 1rem;
+       margin-bottom: 1rem;
+    }
+
+
+    /* Overriding Tailwind Prose for newspaper style */
+    .prose {
+      color: #333333; /* Dark gray for prose text */
+      font-family: 'Merriweather', serif;
+    }
+    .prose :where(h1):not(:where([class~="not-prose"] *)), 
+    .prose .h1-article { /* Special class for article headline if needed */
+      font-family: 'Playfair Display', serif;
+      font-weight: 700; /* Bolder for headlines */
+      color: #1a1a1a; /* Near black for headlines */
+      font-size: 2.5em; /* Adjust as needed */
+      line-height: 1.1;
+      margin-bottom: 0.5em;
+    }
+     .prose :where(h2):not(:where([class~="not-prose"] *)),
+     .prose .h2-article {  /* Special class for article subheadings */
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      color: #2b2b2b;
+      font-size: 1.75em; /* Adjust as needed */
+      margin-top: 1.5em;
+      margin-bottom: 0.75em;
+      border-bottom: 1px solid #dddddd;
+      padding-bottom: 0.25em;
+    }
+    .prose :where(p):not(:where([class~="not-prose"] *)) {
+      line-height: 1.7; /* More leading for readability */
+      margin-top: 0.75em;
+      margin-bottom: 0.75em;
+    }
+    .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+      font-family: 'Merriweather', serif;
+      font-style: italic;
+      border-left-width: 2px;
+      border-left-color: #555555;
+      quotes: none;
+      padding-left: 1em;
+      margin-left: 0;
+      margin-right: 0;
+      color: #444444;
+      background-color: #f9f9f3; /* Slightly off-white for blockquote background */
+    }
+     .prose :where(blockquote p):not(:where([class~="not-prose"] *)):first-of-type::before {
+        content: none; /* Tailwind typography adds quotes, we remove them */
+    }
+    .prose :where(blockquote p):not(:where([class~="not-prose"] *)):last-of-type::after {
+        content: none;
+    }
+
+    /* Utility for small caps text, like bylines or dates */
+    .small-caps {
+      font-variant: small-caps;
+      letter-spacing: 0.05em;
+    }
+
+    /* Styles for editable fields */
+    .editable-field {
+      /* Inherit font properties from parent */
+      font: inherit;
+      color: inherit;
+      line-height: inherit; /* Ensure line height matches for seamless editing */
+      letter-spacing: inherit;
+      text-align: inherit;
+      padding: 0.05em 0.1em; /* Minimal padding to make clicking easier, adjust as needed */
+      margin: -0.05em -0.1em; /* Counteract padding to maintain layout */
+      min-width: 20px; /* Ensure even empty fields are clickable */
+    }
+    .editable-field:hover {
+      /* background-color: rgba(229, 231, 235, 0.3); Slightly visible background on hover */
+    }
+    .editable-field:focus {
+      background-color: rgba(255, 255, 255, 0.85); /* More opaque white on focus */
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5), inset 0 1px 2px rgba(0,0,0,0.05); /* Subtle focus ring and inner shadow */
+    }
+    
+    /* Specific overrides for editable fields to match their static counterparts */
+    .editable-field.font-playfair { font-family: 'Playfair Display', serif; }
+    .editable-field.font-oswald { font-family: 'Oswald', sans-serif; }
+    .editable-field.font-merriweather { font-family: 'Merriweather', serif; }
+
+    /* Ensure textareas used as editable fields expand correctly */
+    .editable-field[type="text"], .editable-field[type="text"]::placeholder {
+        /* Specific styles for single line inputs if needed */
+    }
+    textarea.editable-field {
+      /* field-sizing: content; /* Modern CSS for auto-height, but limited support */
+      /* Fallback JS will handle height */
+      overflow-y: hidden; /* Hide scrollbar if JS is handling height */
+      box-sizing: border-box; /* ensure padding/border included in width/height */
+    }
+
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-neutral-100 text-neutral-800 font-merriweather">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

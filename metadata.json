@@ -1,0 +1,36 @@
+{
+  "name": "Newsroom Mission: Front Page Ethics",
+  "description": "You're the lead journalist at The Ethics Chronicle! Help write a Pressroom Proof story about a student who took a brave moral stand. Gather facts, write the article, and publish like a pro.",
+  "requestFramePermissions": [],
+  "instructions": [
+    {
+      "intent": "start_newsroom_mission",
+      "description": "Kick off the newsroom mission to create a Pressroom Proof article.",
+      "inputs": {
+        "headline": "Create a punchy headline that sums up the story. Think like a pro editor!",
+        "student_name": "Who is the student in the story? Make it sound real!",
+        "moral_issue": "What moral or ethical issue did they face? This is your scoop.",
+        "challenges": "Why was this issue tough? What did they struggle with?",
+        "student_decision": "What did they decide to do? Why was it the moral thing?",
+        "catholic_teachings": "Which Catholic Social Teachings guided their choice? Pick one or two!",
+        "conscience": "Describe how their conscience helped them make the decision.",
+        "quotes": "Add 2–3 quotes to bring the story to life. Imagine what they, friends, or a teacher might say.",
+        "date": "When is your article published?"
+      },
+      "output": {
+        "article": "You’ll get a fully written Pressroom Proof article text with headline, byline, lead, subheadings, quotes, and conclusion — styled just like a real broadsheet story."
+      }
+    },
+    {
+      "intent": "build_research_bibliography",
+      "description": "Every journalist backs up their story — let’s build your source list in APA 7 style.",
+      "inputs": {
+        "sources": "List at least 5 sources: title, author, date, publisher or URL. Separate each one with a new line."
+      },
+      "output": {
+        "bibliography": "Formatted APA 7 reference list you can drop straight into your article submission."
+      }
+    }
+  ],
+  "prompt": ""
+}
